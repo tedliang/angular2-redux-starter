@@ -1,4 +1,4 @@
-import { Component, ViewEncapsulation } from 'angular2/core';
+import { Component, ViewEncapsulation, Inject } from 'angular2/core';
 import { RouteConfig, ROUTER_DIRECTIVES } from 'angular2/router';
 import AboutPage from '../containers/about-page';
 import CounterPage from '../containers/counter-page';
@@ -42,4 +42,8 @@ import { Navigator, NavigatorItem, Logo } from '../components';
   }
 ])
 export default class App {
+  constructor(@Inject('test') t, @Inject('x') x) {
+    console.log(t);
+    console.log(x);
+  }
 };

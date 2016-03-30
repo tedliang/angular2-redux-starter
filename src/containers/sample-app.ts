@@ -12,6 +12,7 @@ import * as SessionActions from '../actions/session';
 import {loginUser, logoutUser} from '../actions/session';
 
 import { RioAboutPage } from '../containers/about-page';
+import { RioTodoPage } from '../containers/todo-page';
 import { RioCounterPage } from '../containers/counter-page';
 
 import {
@@ -48,6 +49,10 @@ import {
               class="text-decoration-none">Counter</a>
           </rio-navigator-item>
           <rio-navigator-item *ngIf="isLoggedIn" class="p1">
+            <a [routerLink]="['Todo']"
+              class="text-decoration-none">Todo</a>
+          </rio-navigator-item>
+          <rio-navigator-item *ngIf="isLoggedIn" class="p1">
             <a [routerLink]="['About']"
               class="text-decoration-none">About Us</a>
           </rio-navigator-item>
@@ -77,6 +82,11 @@ import {
     name: 'Counter',
     component: RioCounterPage,
     useAsDefault: true
+  },
+  {
+    path: '/todo',
+    name: 'Todo',
+    component: RioTodoPage
   },
   {
     path: '/about',

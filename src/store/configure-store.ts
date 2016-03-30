@@ -19,7 +19,7 @@ function configureStore(initialState) {
 }
 
 function _getMiddleware() {
-  let middleware = [ 
+  let middleware = [
     promiseMiddleware,
     ReduxThunk
   ];
@@ -32,7 +32,11 @@ function _getMiddleware() {
 }
 
 function _getEnhancers() {
+  const persistentStore = require('redux-pouchdb-plus').persistentStore;
+  const PouchDB = require('pouchdb');
+  const db = new PouchDB('todos');
   let enhancers = [
+    persistentStore({db}),
     persistState('session', _getStorageConfig())
   ];
 

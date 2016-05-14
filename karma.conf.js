@@ -1,13 +1,11 @@
 'use strict';
 
 const loaders = require('./webpack/loaders');
-
-module.exports = function (config) {
+const webpack = require('webpack');
+module.exports = (config) => {
   config.set({
     frameworks: [
-      'mocha',
-      'chai',
-      'sinon',
+      'jasmine',
       'source-map-support',
     ],
 
@@ -16,46 +14,54 @@ module.exports = function (config) {
     preprocessors: {
       './src/**/*.ts': [
         'webpack',
-        'sourcemap'
+        'sourcemap',
       ],
       './src/**/!(*.test|tests.*).ts': [
-        'coverage'
+        'coverage',
       ],
     },
 
     webpack: {
+      plugins: [
+        new webpack.NoErrorsPlugin(),
+      ],
       entry: './src/tests.entry.ts',
-      devtool: 'source-map',
+      devtool: 'inline-source-map',
       verbose: true,
       resolve: {
-        extensions: ['', '.webpack.js', '.web.js', '.ts', '.js']
+        extensions: ['', '.webpack.js', '.web.js', '.ts', '.js'],
       },
       module: {
         loaders: [
-          loaders.tsTest
+          loaders.tsTest,
+          loaders.css,
+          loaders.svg,
         ],
         postLoaders: [
-          loaders.istanbulInstrumenter
-        ]
+          loaders.istanbulInstrumenter,
+        ],
       },
       stats: { colors: true, reasons: true },
-      debug: true
+      debug: true,
     },
 
     webpackServer: {
-      noInfo: true // prevent console spamming when running in Karma!
+      noInfo: true, // prevent console spamming when running in Karma!
     },
 
-    reporters: ['mocha', 'coverage'],
-    // only output json report to be remapped by remap-istanbul
+    reporters: [
+      'spec',
+      'coverage',
+    ],
     coverageReporter: {
       reporters: [
-        { type: 'json' }
+        { type: 'json' },
+        { type: 'html' },
       ],
       dir: './coverage/',
-      subdir: function (browser) {
+      subdir: (browser) => {
         return browser.toLowerCase().split(/[ /-]/)[0]; // returns 'chrome'
-      }
+      },
     },
 
     port: 9999,
@@ -64,6 +70,6 @@ module.exports = function (config) {
     autoWatch: true,
     browsers: ['Chrome'], // Alternatively: 'PhantomJS'
     captureTimeout: 6000,
-    singleRun: true
+    singleRun: true,
   });
 };

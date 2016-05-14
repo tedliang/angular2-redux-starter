@@ -1,9 +1,9 @@
-import { Component } from 'angular2/core';
+import { Component } from '@angular/core';
 
 @Component({
   selector: 'rio-form-group',
   template: `
-    <div class="p2">
+    <div class="py2">
       <ng-content></ng-content>
     </div>
   `

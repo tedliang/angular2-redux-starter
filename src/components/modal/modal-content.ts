@@ -1,10 +1,10 @@
-import { Component } from 'angular2/core';
+import { Component } from '@angular/core';
 
 @Component({
   selector: 'rio-modal-content',
   styles: [require('./modal.css')],
   template: `
-    <div class="p1 z4 bg-white modal-content">
+    <div class="p2 z2 bg-white modal relative">
       <ng-content></ng-content>
     </div>
   `

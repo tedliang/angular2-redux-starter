@@ -4,6 +4,8 @@ const path = require('path');
 const webpack = require('webpack');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const proxy = require('./server/webpack-dev-proxy');
+const StyleLintPlugin = require('stylelint-webpack-plugin');
+const SplitByPathPlugin = require('webpack-split-by-path');
 
 const loaders = require('./webpack/loaders');
 
@@ -11,52 +13,66 @@ const basePlugins = [
   new webpack.DefinePlugin({
     __DEV__: process.env.NODE_ENV !== 'production',
     __PRODUCTION__: process.env.NODE_ENV === 'production',
-    'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV)
+    'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV),
   }),
-  new webpack.optimize.CommonsChunkPlugin('vendor', '[name].[hash].bundle.js'),
+  new SplitByPathPlugin([
+    { name: 'vendor', path: [__dirname + '/node_modules/'] },
+  ]),
   new HtmlWebpackPlugin({
     template: './src/index.html',
     inject: 'body',
-    minify: false
-  })
+    minify: false,
+  }),
+  new webpack.NoErrorsPlugin(),
 ];
 
-const devPlugins = [];
+const devPlugins = [
+  new StyleLintPlugin({
+    configFile: './.stylelintrc',
+    files: 'src/**/*.css',
+    failOnError: false,
+  }),
+];
 
 const prodPlugins = [
+  new webpack.optimize.OccurenceOrderPlugin(),
+  new webpack.optimize.DedupePlugin(),
   new webpack.optimize.UglifyJsPlugin({
-    mangle: false,
+    mangle: true,
     compress: {
-      warnings: false
-    }
-  })
+      warnings: false,
+    },
+  }),
 ];
 
 const plugins = basePlugins
   .concat(process.env.NODE_ENV === 'production' ? prodPlugins : [])
   .concat(process.env.NODE_ENV === 'development' ? devPlugins : []);
 
+const postcssBasePlugins = [
+  require('postcss-import')({
+    addDependencyTo: webpack,
+  }),
+  require('postcss-cssnext')({
+    browsers: ['ie >= 8', 'last 2 versions'],
+  }),
+];
+const postcssDevPlugins = [];
+const postcssProdPlugins = [
+  require('cssnano')({
+    safe: true,
+    sourcemap: true,
+    autoprefixer: false,
+  }),
+];
+
+const postcssPlugins = postcssBasePlugins
+  .concat(process.env.NODE_ENV === 'production' ? postcssProdPlugins : [])
+  .concat(process.env.NODE_ENV === 'development' ? postcssDevPlugins : []);
+
 module.exports = {
   entry: {
     app: './src/index.ts',
-    shims: './shims/shims_for_IE',
-    vendor: [
-      'es5-shim',
-      'es6-shim',
-      'es6-promise',
-      'angular2/bundles/angular2-polyfills',
-      'angular2/bootstrap',
-      'angular2/platform/browser',
-      'angular2/platform/common_dom',
-      'angular2/core',
-      'angular2/router',
-      'angular2/http',
-      'redux',
-      'redux-thunk',
-      'redux-localstorage',
-      'ng2-redux',
-      'redux-logger'
-    ]
   },
 
   output: {
@@ -64,25 +80,27 @@ module.exports = {
     filename: '[name].[hash].js',
     publicPath: '/',
     sourceMapFilename: '[name].[hash].js.map',
-    chunkFilename: '[id].chunk.js'
+    chunkFilename: '[id].chunk.js',
   },
 
-  devtool: 'source-map',
+  devtool: process.env.NODE_ENV === 'production' ?
+    'source-map' :
+    'inline-source-map',
 
   resolve: {
-    extensions: ['', '.webpack.js', '.web.js', '.ts', '.js']
+    extensions: ['', '.webpack.js', '.web.js', '.ts', '.js'],
   },
 
   plugins: plugins,
 
   devServer: {
     historyApiFallback: { index: '/' },
-    proxy: proxy(),
+    proxy: Object.assign({}, proxy(), { '*': 'http://localhost:3000' }),
   },
 
   module: {
     preLoaders: [
-      loaders.tslint
+      loaders.tslint,
     ],
     loaders: [
       loaders.ts,
@@ -92,19 +110,12 @@ module.exports = {
       loaders.eot,
       loaders.woff,
       loaders.woff2,
-      loaders.ttf
+      loaders.ttf,
     ],
-    noParse: [ /zone\.js\/dist\/.+/, /angular2\/bundles\/.+/ ]
+    noParse: [ /zone\.js\/dist\/.+/, /angular2\/bundles\/.+/ ],
   },
 
-  postcss: function() {
-    return [
-      require('postcss-import')({
-        addDependencyTo: webpack
-      }),
-      require('postcss-cssnext')({
-        browsers: ['ie >= 8', 'last 2 versions']
-      }),
-    ];
-  }
+  postcss: function postcssInit() {
+    return postcssPlugins;
+  },
 };

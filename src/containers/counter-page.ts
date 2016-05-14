@@ -1,52 +1,47 @@
-import { Component, Inject, ApplicationRef } from 'angular2/core';
+import { Component, Inject, ApplicationRef } from '@angular/core';
 import { bindActionCreators } from 'redux';
+import { AsyncPipe } from '@angular/common';
+import { NgRedux } from 'ng2-redux';
+import { Observable } from 'rxjs/Observable';
 
-import * as CounterActions from '../actions/counter';
-import { RioCounter } from '../components';
+import { CounterActions } from '../actions/counter';
+import { RioContainer, RioCounter } from '../components';
+import { IAppState } from '../store/app-state';
 
 @Component({
   selector: 'counter-page',
-  directives: [ RioCounter ],
+  directives: [RioContainer, RioCounter],
+  pipes: [AsyncPipe],
   template: `
-    <div class="col col-4">
-      <h1 class="center">Counter</h1>
-      <rio-counter [counter]="counter"
+    <rio-container [size]=2 [center]=true>
+      <h2 id="qa-counter-heading"
+        class="center caps">
+        Counter
+      </h2>
+
+      <rio-counter
+        [counter]="counter$ | async"
         [increment]="increment"
         [decrement]="decrement">
       </rio-counter>
-    </div>
+    </rio-container>
   `
 })
 export class RioCounterPage {
-  private disconnect: Function;
-  private unsubscribe: Function;
+  private counter$: Observable<number>;
 
   constructor(
-    @Inject('ngRedux') private ngRedux,
-    private applicationRef: ApplicationRef) {}
+    private ngRedux: NgRedux<IAppState>,
+    private counterActions: CounterActions) {
 
-  ngOnInit() {
-    this.disconnect = this.ngRedux.connect(
-      this.mapStateToThis,
-      this.mapDispatchToThis)(this);
-
-    this.unsubscribe = this.ngRedux.subscribe(() => {
-      this.applicationRef.tick();
-    });
+    this.counter$ = this.ngRedux.select(n => n.counter.get('count'));
   }
 
-  ngOnDestroy() {
-    this.unsubscribe();
-    this.disconnect();
-  }
+  private increment = () => {
+    this.ngRedux.dispatch(this.counterActions.increment());
+  };
 
-  mapStateToThis(state) {
-    return {
-      counter: state.counter.get('count')
-    };
-  }
-
-  mapDispatchToThis(dispatch) {
-    return bindActionCreators(CounterActions, dispatch);
-  }
+  private decrement = () => {
+    this.ngRedux.dispatch(this.counterActions.decrement());
+  };
 }

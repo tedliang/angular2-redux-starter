@@ -2,11 +2,12 @@
 
 import {createStore, applyMiddleware, compose} from 'redux';
 import {fromJS} from 'immutable';
-import ReduxThunk from 'redux-thunk';
 import logger from './configure-logger';
 import promiseMiddleware from '../middleware/promise-middleware';
 import rootReducer from '../reducers';
+
 const persistState = require('redux-localstorage');
+const ReduxThunk = require('redux-thunk').default;
 
 function configureStore(initialState) {
   const store = compose(
@@ -14,7 +15,6 @@ function configureStore(initialState) {
     ..._getEnhancers()
   )(createStore)(rootReducer, initialState);
 
-  _enableHotLoader(store);
   return store;
 }
 
@@ -45,15 +45,6 @@ function _getEnhancers() {
   }
 
   return enhancers;
-}
-
-function _enableHotLoader(store) {
-  if (__DEV__ && module.hot) {
-    module.hot.accept('../reducers', () => {
-      const nextRootReducer = require('../reducers');
-      store.replaceReducer(nextRootReducer);
-    });
-  }
 }
 
 function _getStorageConfig() {

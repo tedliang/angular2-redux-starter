@@ -1,14 +1,16 @@
-import { Component } from 'angular2/core';
+import { Component } from '@angular/core';
 
 @Component({
   selector: 'rio-logo',
   styles: [require('./logo.css')],
   template: `
-    <img
-      class="logo"
-      [src]="LogoImage"
-      alt="Rangle.io"
-    />
+    <div className="flex items-center">
+      <img
+        class="logo"
+        [src]="LogoImage"
+        alt="Rangle.io"
+      />
+    </div>
   `
 })
 export class RioLogo {

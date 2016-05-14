@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output } from 'angular2/core';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 
 import { RioModal, RioModalContent } from '../modal';
 import { RioLoginForm } from './login-form';
@@ -9,7 +9,7 @@ import { RioLoginForm } from './login-form';
   template: `
     <rio-modal>
       <rio-modal-content>
-        <h1 class='mr2 ml2'>Login</h1>
+        <h1 class='mt0'>Login</h1>
         <rio-login-form
           [isPending]="isPending"
           [hasError]="hasError"

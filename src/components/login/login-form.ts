@@ -1,11 +1,11 @@
-import { Component, EventEmitter, Input, Output } from 'angular2/core';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 import {
   FORM_DIRECTIVES,
   FormBuilder,
   ControlGroup,
   Control,
   Validators
-} from 'angular2/common';
+} from '@angular/common';
 
 import { RioForm, RioFormError, RioFormGroup, RioLabel } from '../form';
 import { RioAlert } from '../alert';
@@ -20,39 +20,53 @@ import { RioInput } from '../form/input';
   ],
   template: `
     <rio-form
-      [ngFormModel]="group"
-      (ngSubmit)="handleSubmit()">
+      [formModel]="group"
+      (onSubmit)="handleSubmit()">
       <rio-alert status='info' *ngIf="isPending">Loading...</rio-alert>
-      <rio-alert status='error' *ngIf="hasError">
+      <rio-alert
+        qaid="qa-alert"
+        status='error'*ngIf="hasError">
         Invalid username and password
       </rio-alert>
+
       <rio-form-group>
-        <rio-label>Username</rio-label>
+        <rio-label qaid="qa-uname-label">Username</rio-label>
         <rio-input
+          qaid="qa-uname-input"
           inputType='text'
           placeholder='Username'
           [formControl]="username"></rio-input>
-        <rio-form-error [visible]="showNameWarning()">
-          Username required!
+        <rio-form-error
+          qaid="qa-uname-validation"
+          [visible]="showNameWarning()">
+          Username is required.
         </rio-form-error>
       </rio-form-group>
+
       <rio-form-group>
-        <rio-label>Password</rio-label>
+        <rio-label qaid="qa-password-label">Password</rio-label>
         <rio-input
+          qaid="qa-password-input"
           inputType='password'
           placeholder='Password'
           [formControl]="password"></rio-input>
-        <rio-form-error [visible]="showPasswordWarning()">
-          Password required!
+        <rio-form-error
+          qaid="qa-password-validation"
+          [visible]="showPasswordWarning()">
+          Password is required.
         </rio-form-error>
       </rio-form-group>
+
       <rio-form-group>
         <rio-button
-          classStyles="mr1"
+          qaid="qa-login-button"
+          className="mr1"
           type="submit">
           Login
         </rio-button>
-        <rio-button classStyles="bg-red"
+        <rio-button
+          qaid="qa-clear-button"
+          className="bg-red"
           (onClick)="reset()">
           Clear
         </rio-button>
@@ -85,7 +99,12 @@ export class RioLoginForm {
   }
 
   handleSubmit() {
-    this.onSubmit.emit(this.group.value);
+    this.password.markAsTouched();
+    this.username.markAsTouched();
+
+    if (this.password.value && this.username.value) {
+      this.onSubmit.emit(this.group.value);
+    }
   }
 
   reset() {
